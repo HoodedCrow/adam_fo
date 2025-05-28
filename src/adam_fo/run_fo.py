@@ -70,7 +70,7 @@ def _populate_fo_directory(working_dir: str) -> str:
     return working_dir
 
 
-def _create_fo_tmp_directory() -> str:
+def _create_fo_tmp_directory(base_tmp_dir: Optional[str] = None) -> str:
     """
     Creates a temporary directory that avoids /tmp to handle fo locking and directory length limits.
     Uses ~/.cache/adam_fo/ftmp to avoid Find_Orb's special handling of paths containing /tmp/.
@@ -78,7 +78,7 @@ def _create_fo_tmp_directory() -> str:
     Returns:
         str: The absolute path to the temporary directory populated with necessary FO files
     """
-    base_tmp_dir = config.get_cache_dir()
+    base_tmp_dir = config.get_cache_dir() if base_tmp_dir is None else base_tmp_dir
     os.makedirs(base_tmp_dir, mode=0o770, exist_ok=True)
     tmp_dir = tempfile.mkdtemp(dir=base_tmp_dir, prefix="fo_")
     os.chmod(tmp_dir, 0o770)
@@ -97,6 +97,7 @@ def fo(
     ades_string: str,
     clean_up: bool = True,
     out_dir: Optional[str] = None,
+    temp_dir: Optional[str] = None,
 ) -> Tuple[Orbits, ADESObservations, Optional[str]]:
     """Run programmatic Find_Orb orbit determination
 
@@ -109,6 +110,11 @@ def fo(
     out_dir : Optional[str], optional
         If provided, the temporary directory will be copied to this path after running Find_Orb.
         The bc405.dat and DE440t files will not be copied.
+    temp_dir : Optional[str], optional
+        If provided, the temporary directory will be created at this location. 
+        If not provided, the default temporary directory in ~/.cache/adam_fo/ will be used. 
+        It may be useful to explicitly set the path in HPC use cases, where user directories 
+        often have stricter disk usage quotas.
 
     Returns
     -------
@@ -120,7 +126,7 @@ def fo(
     """
 
     _de440t_exists()
-    fo_tmp_dir = _create_fo_tmp_directory()
+    fo_tmp_dir = _create_fo_tmp_directory(temp_dir)
 
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)

@@ -6,8 +6,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.compute as pc
 import quivr as qv
-from adam_core.coordinates import (CartesianCoordinates, CoordinateCovariances,
-                                   Origin)
+from adam_core.coordinates import CometaryCoordinates, CoordinateCovariances, Origin
 from adam_core.observations import ADESObservations
 from adam_core.orbits import Orbits
 from adam_core.time import Timestamp
@@ -184,7 +183,6 @@ def fo_to_adam_orbit_cov(fo_output_folder: str) -> Orbits:
     orbits = Orbits.empty()
     for object_id, elements in elements_dict.items():
         covar_matrix = np.array([covar_dict["covar"]])
-        covar_state_vector = [covar_dict["state_vect"]]
 
         covariances_cartesian = CoordinateCovariances.from_matrix(covar_matrix)
         # After a lot of searching, we mostly believe that the epoch
@@ -192,20 +190,20 @@ def fo_to_adam_orbit_cov(fo_output_folder: str) -> Orbits:
         # ADES files, find_orb converts the jd times in its struct to
         # TD and does not appear to rescale it again before writing
         # out the total.json and covar.json files.
-        times = Timestamp.from_jd([covar_dict["epoch"]], scale="tt")
+        times = Timestamp.from_jd([elements["epoch"]], scale="tt")
 
-        cartesian_coordinates = CartesianCoordinates.from_kwargs(
-            x=[covar_state_vector[0][0]],
-            y=[covar_state_vector[0][1]],
-            z=[covar_state_vector[0][2]],
-            vx=[covar_state_vector[0][3]],
-            vy=[covar_state_vector[0][4]],
-            vz=[covar_state_vector[0][5]],
+        cartesian_coordinates = CometaryCoordinates.from_kwargs(
+            q=[elements["q"]],
+            e=[elements["e"]],
+            i=[elements["i"]],
+            raan=[elements["asc_node"]],
+            ap=[elements["arg_per"]],
+            tp=[elements["Tp"] - 2400000.5],
             time=times,
             origin=Origin.from_kwargs(code=["SUN"]),
             frame="ecliptic",
             covariance=covariances_cartesian,
-        )
+        ).to_cartesian()
         orbit = Orbits.from_kwargs(
             orbit_id=[object_id],
             object_id=[object_id],

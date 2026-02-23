@@ -30,7 +30,7 @@ clone_repo() {
 clone_repo "lunar" "005ccaa469b32abc0df84b512d52e8b1c80efbda"
 clone_repo "sat_code" "66afa0860da796a4ff4b4557531fb4e6ae44a095"
 clone_repo "jpl_eph" "0c2782e86e42df69a55c2b2db0b72a40312c79c0"
-clone_repo "find_orb" "f574af87ed11f5ec5b69ef8125e8b539de6d6645"
+clone_repo "find_orb" "7e02c585cb4e13130c9b2e9c82b9e95469b738b5"
 clone_repo "miscell" "f4565afdf9d0324e798527f837e0814f8de0abe0"
 
 # Build and install components in correct dependency order
